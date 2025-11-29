@@ -1,0 +1,88 @@
+using Microsoft.EntityFrameworkCore.Migrations;
+
+#nullable disable
+
+namespace LibrarySystem.Data.Migrations
+{
+    /// <inheritdoc />
+    public partial class LibrarySystem : Migration
+    {
+        /// <inheritdoc />
+        protected override void Up(MigrationBuilder migrationBuilder)
+        {
+
+        }
+
+        /// <inheritdoc />
+        protected override void Down(MigrationBuilder migrationBuilder)
+        {
+
+        }
+    }
+}
+using Microsoft.EntityFrameworkCore.Migrations;
+
+#nullable disable
+
+namespace LibrarySystem.Data.Migrations
+{
+    /// <inheritdoc />
+    public partial class Borrow : Migration
+    {
+        /// <inheritdoc />
+        protected override void Up(MigrationBuilder migrationBuilder)
+        {
+
+        }
+
+        /// <inheritdoc />
+        protected override void Down(MigrationBuilder migrationBuilder)
+        {
+
+        }
+    }
+}
+using Microsoft.EntityFrameworkCore.Migrations;
+
+#nullable disable
+
+namespace LibrarySystem.Data.Migrations
+{
+    /// <inheritdoc />
+    public partial class BorrowItem : Migration
+    {
+        /// <inheritdoc />
+        protected override void Up(MigrationBuilder migrationBuilder)
+        {
+
+        }
+
+        /// <inheritdoc />
+        protected override void Down(MigrationBuilder migrationBuilder)
+        {
+
+        }
+    }
+}
+using Microsoft.EntityFrameworkCore.Migrations;
+
+#nullable disable
+
+namespace LibrarySystem.Data.Migrations
+{
+    /// <inheritdoc />
+    public partial class Member : Migration
+    {
+        /// <inheritdoc />
+        protected override void Up(MigrationBuilder migrationBuilder)
+        {
+
+        }
+
+        /// <inheritdoc />
+        protected override void Down(MigrationBuilder migrationBuilder)
+        {
+
+        }
+    }
+}
