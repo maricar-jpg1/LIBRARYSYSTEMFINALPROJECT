@@ -1,0 +1,800 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.EntityFrameworkCore;
+using LibrarySystem.Data;
+using LibrarySystem.Models;
+
+namespace LibrarySystem.Controllers
+{
+    public class BooksController : Controller
+    {
+        
+        private readonly ApplicationDbContext _context;
+
+        public BooksController(ApplicationDbContext context)
+        {
+            _context = context;
+        }
+
+        // GET: Books
+        public async Task<IActionResult> Index()
+        {
+            return View(await _context.Book.ToListAsync());
+        }
+
+        // GET: Books/Details/5
+        public async Task<IActionResult> Details(int? id)
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
+
+            var book = await _context.Book
+                .FirstOrDefaultAsync(m => m.Id == id);
+            if (book == null)
+            {
+                return NotFound();
+            }
+
+            return View(book);
+        }
+
+        // GET: Books/Create
+        public IActionResult Create()
+        {
+            return View();
+        }
+
+        // POST: Books/Create
+        // To protect from overposting attacks, enable the specific properties you want to bind to.
+        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Create([Bind("Id,Title,Author,CopiesAvailable")] Book book)
+        {
+            if (ModelState.IsValid)
+            {
+                _context.Add(book);
+                await _context.SaveChangesAsync();
+                return RedirectToAction(nameof(Index));
+            }
+            return View(book);
+        }
+
+        // GET: Books/Edit/5
+        public async Task<IActionResult> Edit(int? id)
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
+
+            var book = await _context.Book.FindAsync(id);
+            if (book == null)
+            {
+                return NotFound();
+            }
+            return View(book);
+        }
+
+        // POST: Books/Edit/5
+        // To protect from overposting attacks, enable the specific properties you want to bind to.
+        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Edit(int id, [Bind("Id,Title,Author,CopiesAvailable")] Book book)
+        {
+            if (id != book.Id)
+            {
+                return NotFound();
+            }
+
+            if (ModelState.IsValid)
+            {
+                try
+                {
+                    _context.Update(book);
+                    await _context.SaveChangesAsync();
+                }
+                catch (DbUpdateConcurrencyException)
+                {
+                    if (!BookExists(book.Id))
+                    {
+                        return NotFound();
+                    }
+                    else
+                    {
+                        throw;
+                    }
+                }
+                return RedirectToAction(nameof(Index));
+            }
+            return View(book);
+        }
+
+        // GET: Books/Delete/5
+        public async Task<IActionResult> Delete(int? id)
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
+
+            var book = await _context.Book
+                .FirstOrDefaultAsync(m => m.Id == id);
+            if (book == null)
+            {
+                return NotFound();
+            }
+
+            return View(book);
+        }
+
+        // POST: Books/Delete/5
+        [HttpPost, ActionName("Delete")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteConfirmed(int id)
+        {
+            var book = await _context.Book.FindAsync(id);
+            if (book != null)
+            {
+                _context.Book.Remove(book);
+            }
+
+            await _context.SaveChangesAsync();
+            return RedirectToAction(nameof(Index));
+        }
+
+        private bool BookExists(int id)
+        {
+            return _context.Book.Any(e => e.Id == id);
+        }
+    }
+}
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.EntityFrameworkCore;
+using LibrarySystem.Data;
+using LibrarySystem.Models;
+
+namespace LibrarySystem.Controllers
+{
+    public class BorrowItemsController : Controller
+    {
+        private readonly ApplicationDbContext _context;
+
+        public BorrowItemsController(ApplicationDbContext context)
+        {
+            _context = context;
+        }
+
+        // GET: BorrowItems
+        public async Task<IActionResult> Index()
+        {
+            var applicationDbContext = _context.BorrowItem.Include(b => b.Book);
+            return View(await applicationDbContext.ToListAsync());
+        }
+
+        // GET: BorrowItems/Details/5
+        public async Task<IActionResult> Details(int? id)
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
+
+            var borrowItem = await _context.BorrowItem
+                .Include(b => b.Book)
+                .FirstOrDefaultAsync(m => m.Id == id);
+            if (borrowItem == null)
+            {
+                return NotFound();
+            }
+
+            return View(borrowItem);
+        }
+
+        // GET: BorrowItems/Create
+        public IActionResult Create()
+        {
+            ViewData["BookId"] = new SelectList(_context.Book, "Id", "Id");
+            return View();
+        }
+
+        // POST: BorrowItems/Create
+        // To protect from overposting attacks, enable the specific properties you want to bind to.
+        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Create([Bind("Id,BorrowId,BookId,ReturnDate")] BorrowItem borrowItem)
+        {
+            if (ModelState.IsValid)
+            {
+                _context.Add(borrowItem);
+                await _context.SaveChangesAsync();
+                return RedirectToAction(nameof(Index));
+            }
+            ViewData["BookId"] = new SelectList(_context.Book, "Id", "Id", borrowItem.BookId);
+            return View(borrowItem);
+        }
+
+        // GET: BorrowItems/Edit/5
+        public async Task<IActionResult> Edit(int? id)
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
+
+            var borrowItem = await _context.BorrowItem.FindAsync(id);
+            if (borrowItem == null)
+            {
+                return NotFound();
+            }
+            ViewData["BookId"] = new SelectList(_context.Book, "Id", "Id", borrowItem.BookId);
+            return View(borrowItem);
+        }
+
+        // POST: BorrowItems/Edit/5
+        // To protect from overposting attacks, enable the specific properties you want to bind to.
+        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Edit(int id, [Bind("Id,BorrowId,BookId,ReturnDate")] BorrowItem borrowItem)
+        {
+            if (id != borrowItem.Id)
+            {
+                return NotFound();
+            }
+
+            if (ModelState.IsValid)
+            {
+                try
+                {
+                    _context.Update(borrowItem);
+                    await _context.SaveChangesAsync();
+                }
+                catch (DbUpdateConcurrencyException)
+                {
+                    if (!BorrowItemExists(borrowItem.Id))
+                    {
+                        return NotFound();
+                    }
+                    else
+                    {
+                        throw;
+                    }
+                }
+                return RedirectToAction(nameof(Index));
+            }
+            ViewData["BookId"] = new SelectList(_context.Book, "Id", "Id", borrowItem.BookId);
+            return View(borrowItem);
+        }
+
+        // GET: BorrowItems/Delete/5
+        public async Task<IActionResult> Delete(int? id)
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
+
+            var borrowItem = await _context.BorrowItem
+                .Include(b => b.Book)
+                .FirstOrDefaultAsync(m => m.Id == id);
+            if (borrowItem == null)
+            {
+                return NotFound();
+            }
+
+            return View(borrowItem);
+        }
+
+        // POST: BorrowItems/Delete/5
+        [HttpPost, ActionName("Delete")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteConfirmed(int id)
+        {
+            var borrowItem = await _context.BorrowItem.FindAsync(id);
+            if (borrowItem != null)
+            {
+                _context.BorrowItem.Remove(borrowItem);
+            }
+
+            await _context.SaveChangesAsync();
+            return RedirectToAction(nameof(Index));
+        }
+
+        private bool BorrowItemExists(int id)
+        {
+            return _context.BorrowItem.Any(e => e.Id == id);
+        }
+    }
+}
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.EntityFrameworkCore;
+using LibrarySystem.Data;
+using LibrarySystem.Models;
+
+namespace LibrarySystem.Controllers
+{
+    public class BorrowsController : Controller
+    {
+        private readonly ApplicationDbContext _context;
+
+        public BorrowsController(ApplicationDbContext context)
+        {
+            _context = context;
+        }
+
+        // GET: Borrows
+        public async Task<IActionResult> Index()
+        {
+            var applicationDbContext = _context.Borrow.Include(b => b.Member);
+            return View(await applicationDbContext.ToListAsync());
+        }
+
+        // GET: Borrows/Details/5
+        public async Task<IActionResult> Details(int? id)
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
+
+            var borrow = await _context.Borrow
+                .Include(b => b.Member)
+                .FirstOrDefaultAsync(m => m.Id == id);
+            if (borrow == null)
+            {
+                return NotFound();
+            }
+
+            return View(borrow);
+        }
+
+        // GET: Borrows/Create
+        public IActionResult Create()
+        {
+            ViewData["MemberId"] = new SelectList(_context.Set<Member>(), "Id", "Id");
+            return View();
+        }
+
+        // POST: Borrows/Create
+        // To protect from overposting attacks, enable the specific properties you want to bind to.
+        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Create([Bind("Id,MemberId,BorrowDate")] Borrow borrow)
+        {
+            if (ModelState.IsValid)
+            {
+                _context.Add(borrow);
+                await _context.SaveChangesAsync();
+                return RedirectToAction(nameof(Index));
+            }
+            ViewData["MemberId"] = new SelectList(_context.Set<Member>(), "Id", "Id", borrow.MemberId);
+            return View(borrow);
+        }
+
+        // GET: Borrows/Edit/5
+        public async Task<IActionResult> Edit(int? id)
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
+
+            var borrow = await _context.Borrow.FindAsync(id);
+            if (borrow == null)
+            {
+                return NotFound();
+            }
+            ViewData["MemberId"] = new SelectList(_context.Set<Member>(), "Id", "Id", borrow.MemberId);
+            return View(borrow);
+        }
+
+        // POST: Borrows/Edit/5
+        // To protect from overposting attacks, enable the specific properties you want to bind to.
+        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Edit(int id, [Bind("Id,MemberId,BorrowDate")] Borrow borrow)
+        {
+            if (id != borrow.Id)
+            {
+                return NotFound();
+            }
+
+            if (ModelState.IsValid)
+            {
+                try
+                {
+                    _context.Update(borrow);
+                    await _context.SaveChangesAsync();
+                }
+                catch (DbUpdateConcurrencyException)
+                {
+                    if (!BorrowExists(borrow.Id))
+                    {
+                        return NotFound();
+                    }
+                    else
+                    {
+                        throw;
+                    }
+                }
+                return RedirectToAction(nameof(Index));
+            }
+            ViewData["MemberId"] = new SelectList(_context.Set<Member>(), "Id", "Id", borrow.MemberId);
+            return View(borrow);
+        }
+
+        // GET: Borrows/Delete/5
+        public async Task<IActionResult> Delete(int? id)
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
+
+            var borrow = await _context.Borrow
+                .Include(b => b.Member)
+                .FirstOrDefaultAsync(m => m.Id == id);
+            if (borrow == null)
+            {
+                return NotFound();
+            }
+
+            return View(borrow);
+        }
+
+        // POST: Borrows/Delete/5
+        [HttpPost, ActionName("Delete")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteConfirmed(int id)
+        {
+            var borrow = await _context.Borrow.FindAsync(id);
+            if (borrow != null)
+            {
+                _context.Borrow.Remove(borrow);
+            }
+
+            await _context.SaveChangesAsync();
+            return RedirectToAction(nameof(Index));
+        }
+
+        private bool BorrowExists(int id)
+        {
+            return _context.Borrow.Any(e => e.Id == id);
+        }
+    }
+}
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.EntityFrameworkCore;
+using LibrarySystem.Data;
+using LibrarySystem.Models;
+
+namespace LibrarySystem.Controllers
+{
+    public class MembersController : Controller
+    {
+        private readonly ApplicationDbContext _context;
+
+        public MembersController(ApplicationDbContext context)
+        {
+            _context = context;
+        }
+
+        // GET: Members
+        public async Task<IActionResult> Index()
+        {
+            return View(await _context.Member.ToListAsync());
+        }
+
+        // GET: Members/Details/5
+        public async Task<IActionResult> Details(int? id)
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
+
+            var member = await _context.Member
+                .FirstOrDefaultAsync(m => m.Id == id);
+            if (member == null)
+            {
+                return NotFound();
+            }
+
+            return View(member);
+        }
+
+        // GET: Members/Create
+        public IActionResult Create()
+        {
+            return View();
+        }
+
+        // POST: Members/Create
+        // To protect from overposting attacks, enable the specific properties you want to bind to.
+        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Create([Bind("Id,FullName")] Member member)
+        {
+            if (ModelState.IsValid)
+            {
+                _context.Add(member);
+                await _context.SaveChangesAsync();
+                return RedirectToAction(nameof(Index));
+            }
+            return View(member);
+        }
+
+        // GET: Members/Edit/5
+        public async Task<IActionResult> Edit(int? id)
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
+
+            var member = await _context.Member.FindAsync(id);
+            if (member == null)
+            {
+                return NotFound();
+            }
+            return View(member);
+        }
+
+        // POST: Members/Edit/5
+        // To protect from overposting attacks, enable the specific properties you want to bind to.
+        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Edit(int id, [Bind("Id,FullName")] Member member)
+        {
+            if (id != member.Id)
+            {
+                return NotFound();
+            }
+
+            if (ModelState.IsValid)
+            {
+                try
+                {
+                    _context.Update(member);
+                    await _context.SaveChangesAsync();
+                }
+                catch (DbUpdateConcurrencyException)
+                {
+                    if (!MemberExists(member.Id))
+                    {
+                        return NotFound();
+                    }
+                    else
+                    {
+                        throw;
+                    }
+                }
+                return RedirectToAction(nameof(Index));
+            }
+            return View(member);
+        }
+
+        // GET: Members/Delete/5
+        public async Task<IActionResult> Delete(int? id)
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
+
+            var member = await _context.Member
+                .FirstOrDefaultAsync(m => m.Id == id);
+            if (member == null)
+            {
+                return NotFound();
+            }
+
+            return View(member);
+        }
+
+        // POST: Members/Delete/5
+        [HttpPost, ActionName("Delete")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteConfirmed(int id)
+        {
+            var member = await _context.Member.FindAsync(id);
+            if (member != null)
+            {
+                _context.Member.Remove(member);
+            }
+
+            await _context.SaveChangesAsync();
+            return RedirectToAction(nameof(Index));
+        }
+
+        private bool MemberExists(int id)
+        {
+            return _context.Member.Any(e => e.Id == id);
+        }
+    }
+}
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.EntityFrameworkCore;
+using LibrarySystem.Data;
+using LibrarySystem.Models;
+
+namespace LibrarySystem.Controllers
+{
+    public class MembersController : Controller
+    {
+        private readonly ApplicationDbContext _context;
+
+        public MembersController(ApplicationDbContext context)
+        {
+            _context = context;
+        }
+
+        // GET: Members
+        public async Task<IActionResult> Index()
+        {
+            return View(await _context.Member.ToListAsync());
+        }
+
+        // GET: Members/Details/5
+        public async Task<IActionResult> Details(int? id)
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
+
+            var member = await _context.Member
+                .FirstOrDefaultAsync(m => m.Id == id);
+            if (member == null)
+            {
+                return NotFound();
+            }
+
+            return View(member);
+        }
+
+        // GET: Members/Create
+        public IActionResult Create()
+        {
+            return View();
+        }
+
+        // POST: Members/Create
+        // To protect from overposting attacks, enable the specific properties you want to bind to.
+        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Create([Bind("Id,FullName")] Member member)
+        {
+            if (ModelState.IsValid)
+            {
+                _context.Add(member);
+                await _context.SaveChangesAsync();
+                return RedirectToAction(nameof(Index));
+            }
+            return View(member);
+        }
+
+        // GET: Members/Edit/5
+        public async Task<IActionResult> Edit(int? id)
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
+
+            var member = await _context.Member.FindAsync(id);
+            if (member == null)
+            {
+                return NotFound();
+            }
+            return View(member);
+        }
+
+        // POST: Members/Edit/5
+        // To protect from overposting attacks, enable the specific properties you want to bind to.
+        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Edit(int id, [Bind("Id,FullName")] Member member)
+        {
+            if (id != member.Id)
+            {
+                return NotFound();
+            }
+
+            if (ModelState.IsValid)
+            {
+                try
+                {
+                    _context.Update(member);
+                    await _context.SaveChangesAsync();
+                }
+                catch (DbUpdateConcurrencyException)
+                {
+                    if (!MemberExists(member.Id))
+                    {
+                        return NotFound();
+                    }
+                    else
+                    {
+                        throw;
+                    }
+                }
+                return RedirectToAction(nameof(Index));
+            }
+            return View(member);
+        }
+
+        // GET: Members/Delete/5
+        public async Task<IActionResult> Delete(int? id)
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
+
+            var member = await _context.Member
+                .FirstOrDefaultAsync(m => m.Id == id);
+            if (member == null)
+            {
+                return NotFound();
+            }
+
+            return View(member);
+        }
+
+        // POST: Members/Delete/5
+        [HttpPost, ActionName("Delete")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteConfirmed(int id)
+        {
+            var member = await _context.Member.FindAsync(id);
+            if (member != null)
+            {
+                _context.Member.Remove(member);
+            }
+
+            await _context.SaveChangesAsync();
+            return RedirectToAction(nameof(Index));
+        }
+
+        private bool MemberExists(int id)
+        {
+            return _context.Member.Any(e => e.Id == id);
+        }
+    }
+}
