@@ -1,0 +1,41 @@
+namespace LIBRARYSYSTEMM.Models
+{
+    public class Book
+    {
+        public int Id { get; set; }
+        public required string Title { get; set; }
+        public required string Author { get; set; }
+        public int CopiesAvailable { get; set; }
+    }
+}
+
+namespace LibrarySystem.Models
+{
+    public class Borrow
+    {
+        public int Id { get; set; }
+        public int MemberId { get; set; }
+        public DateTime BorrowDate { get; set; }
+        public virtual Member Member { get; set; }
+        public virtual List<BorrowItem>Items { get; set; }
+    }
+}
+namespace LibrarySystem.Models
+{
+    public class BorrowItem
+    {
+        public int Id { get; set; }
+        public int BorrowId { get; set; }
+        public int BookId { get; set; }
+        public DateTime? ReturnDate { get; set; }
+        public virtual Book Book { get; set; }
+    }
+}
+namespace LibrarySystem.Models
+{
+    public class Member
+    {
+        public int Id { get; set; }
+        public string FullName { get; set; }
+    }
+}
